@@ -18,6 +18,7 @@ const AuthForm = ({ type }: { type: string }) => {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const [error, setError] = useState<string | null>(null);
 
   const authFormSchema = formSchema(type);
 
@@ -33,11 +34,12 @@ const AuthForm = ({ type }: { type: string }) => {
   // 2. Define a submit handler.
   const onSubmit = async (data: z.infer<typeof authFormSchema>) => {
     setIsLoading(true);
+
     // Do something with the form values.
     // ✅ This will be type-safe and validated.
     try {
       // sign up with appwrite
-      // create plaid token
+      setError(null); // Clear any previous error
 
       const userData = {
         firstName: data?.firstName!,
@@ -52,8 +54,12 @@ const AuthForm = ({ type }: { type: string }) => {
         password: data?.password,
       };
       if (type === "sign-up") {
-        const newUser = await signUp(userData);
-        setUser(newUser);
+        const response = await signUp(userData);
+        if (response?.error) {
+          setError(response?.error);
+        } else {
+          setUser(response);
+        }
       }
 
       if (type === "sign-in") {
@@ -61,7 +67,15 @@ const AuthForm = ({ type }: { type: string }) => {
           email: data?.email,
           password: data?.password,
         });
-        if (response) router.push("/");
+
+        if (response.error) {
+          // If there's an error, display it on the frontend
+          setError(response.error);
+        } else {
+          // Handle successful login (e.g., redirect, store session, etc.)
+          <p>Loading...</p>;
+          router.push("/");
+        }
       }
     } catch (err) {
       console.log(err);
@@ -101,6 +115,15 @@ const AuthForm = ({ type }: { type: string }) => {
         </div>
       ) : (
         <>
+          {error && (
+            <div
+              className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
+              role="alert"
+            >
+              <span className="font-bold">{error}</span>
+            </div>
+          )}
+
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
               {type === "sign-up" ? (

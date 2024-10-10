@@ -195,6 +195,11 @@ export const getTransactionStatus = (date: Date) => {
   return date > twoDaysAgo ? "Processing" : "Success";
 };
 
+const stateValidation = new RegExp(/^[A-Z]{2}$/);
+const postalCodeValidation = new RegExp(/^[0-9]{5}(?:-[0-9]{4})?$/);
+const dobValidation = /^\d{4}-\d{2}-\d{2}$/;
+const ssnValidation = /^(?!666|000|9\d{2})\d{3}-(?!00)\d{2}-(?!0{4})\d{4}$/;
+
 export const formSchema = (type: string) =>
   z.object({
     firstName: type === "sign-in" ? z.string().optional() : z.string().min(3),
@@ -203,11 +208,34 @@ export const formSchema = (type: string) =>
       type === "sign-in" ? z.string().optional() : z.string().min(2).max(50),
     city: type === "sign-in" ? z.string().optional() : z.string().min(2),
 
-    state: type === "sign-in" ? z.string().optional() : z.string().max(2),
+    state:
+      type === "sign-in"
+        ? z.string().optional()
+        : z
+            .string()
+            .max(2, { message: "Must have at only 2 characters" })
+            .regex(stateValidation, { message: "Invalid State (eg. LA)" }),
     postalCode:
-      type === "sign-in" ? z.string().optional() : z.string().min(3).max(6),
-    dob: type === "sign-in" ? z.string().optional() : z.string().min(3),
-    ssn: type === "sign-in" ? z.string().optional() : z.string().min(3),
+      type === "sign-in"
+        ? z.string().optional()
+        : z
+            .string()
+            .min(5)
+            .max(5)
+            .regex(postalCodeValidation, { message: "Invalid Postal Code " }),
+    dob:
+      type === "sign-in"
+        ? z.string().optional()
+        : z.string().regex(dobValidation, {
+            message: "Date of birth must be in the format yyyy-mm-dd",
+          }),
+    ssn:
+      type === "sign-in"
+        ? z.string().optional()
+        : z.string().regex(ssnValidation, {
+            message:
+              "SSN must be in the format XXX-XX-XXXX (e.g., 123-45-6789) and must be a valid SSN in the US.",
+          }),
     email: z.string().email(),
     password: z.string().min(8),
   });

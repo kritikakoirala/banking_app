@@ -34,11 +34,17 @@ export const getAccounts = async ({ userId }: getAccountsProps) => {
           institutionId: accountsResponse?.data?.item?.institution_id!,
         });
 
+        // Additional check before proceeding
+        if (!accountsResponse?.data?.item?.institution_id) {
+          console.error("institution_id is undefined. Cannot proceed.");
+          throw new Error("Invalid institution ID.");
+        }
+
         const account = {
           id: accountData.account_id,
           availableBalance: accountData.balances.available!,
           currentBalance: accountData.balances.current!,
-          institutionId: institution.institution_id,
+          institutionId: institution?.institution_id,
           name: accountData.name,
           officialName: accountData.official_name,
           mask: accountData.mask!,
@@ -59,7 +65,10 @@ export const getAccounts = async ({ userId }: getAccountsProps) => {
 
     return parseStringify({ data: accounts, totalBanks, totalCurrentBalance });
   } catch (error) {
-    console.error("An error occurred while getting the accounts:", error);
+    console.error(
+      "An error occurred while getting the accounts in getAccount functions:",
+      error
+    );
   }
 };
 
@@ -74,13 +83,18 @@ export const getAccount = async ({ appwriteItemId }: getAccountProps) => {
       access_token: bank?.accessToken,
     });
 
-    // console.log("===========data=============");
     const accountData = accountsResponse?.data.accounts[0];
 
     //get transfer transactions from appwrite
     const transferTransactionsData = await getTransactionsByBankId({
       bankId: bank?.$id,
     });
+
+    // Additional check before proceeding
+    if (!bank?.$id) {
+      console.error("bank Id is undefined. Cannot proceed.");
+      throw new Error("Invalid Bank ID.");
+    }
 
     const transferTransactions = transferTransactionsData.documents.map(
       (transferData: Transaction) => ({
@@ -99,9 +113,21 @@ export const getAccount = async ({ appwriteItemId }: getAccountProps) => {
       institutionId: accountsResponse?.data?.item?.institution_id!,
     });
 
+    // Additional check before proceeding
+    if (!accountsResponse?.data?.item?.institution_id) {
+      console.error("institution_id is undefined. Cannot proceed.");
+      throw new Error("Invalid institution ID.");
+    }
+
     const transactions = await getTransactions({
       accessToken: bank?.accessToken,
     });
+
+    // Additional check before proceeding
+    if (!bank?.accessToken) {
+      console.error("access token is undefined. Cannot proceed.");
+      throw new Error("Invalid Access Token.");
+    }
 
     const account = {
       id: accountData.account_id,
@@ -144,7 +170,10 @@ export const getInstitution = async ({
 
     return parseStringify(intitution);
   } catch (error) {
-    console.error("An error occurred while getting the accounts:", error);
+    console.error(
+      "An error occurred while getting the accounts in getInstirution functions:",
+      error
+    );
   }
 };
 
@@ -182,6 +211,9 @@ export const getTransactions = async ({
 
     return parseStringify(transactions);
   } catch (error) {
-    console.error("An error occurred while getting the accounts:", error);
+    console.error(
+      "An error occurred while getting the accounts in getTransaction function:",
+      error
+    );
   }
 };

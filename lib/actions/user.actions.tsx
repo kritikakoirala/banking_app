@@ -1,7 +1,7 @@
 "use server";
 
 import { createAdminClient, createSessionClient } from "../appwrite";
-import { ID, Query } from "node-appwrite";
+import { AppwriteException, ID, Query } from "node-appwrite";
 import { cookies } from "next/headers";
 import { encryptId, extractCustomerIdFromUrl, parseStringify } from "../utils";
 import {
@@ -41,18 +41,29 @@ export const signIn = async ({ email, password }: signInProps) => {
     const { account } = await createAdminClient();
 
     const session = await account.createEmailPasswordSession(email, password);
+    try {
+      cookies().set("appwrite-session", session.secret, {
+        path: "/",
+        httpOnly: true,
+        sameSite: "strict",
+        secure: true,
+      });
 
-    cookies().set("appwrite-session", session.secret, {
-      path: "/",
-      httpOnly: true,
-      sameSite: "strict",
-      secure: true,
-    });
+      const user = await getUserInfo({ userId: session?.userId });
+      return parseStringify(user);
+    } catch (error) {
+      return { error: "There is no such user. Please sign up first" };
+      // console.log("Something went wrong with the session", error);
+    }
+  } catch (error) {
+    // If an AppwriteException occurs, return the error message to frontend
+    if (error instanceof AppwriteException) {
+      // Return error with a proper HTTP status and message
+      return { error: error.message };
+    }
 
-    const user = await getUserInfo({ userId: session?.userId });
-    return parseStringify(user);
-  } catch (err) {
-    console.log(err);
+    // For any other error (network, server, etc.)
+    return { error: "An unexpected error occurred." };
   }
 };
 
@@ -62,7 +73,6 @@ export const signUp = async ({ password, ...userData }: SignUpParams) => {
   let newUserAccount;
   try {
     const { account, database } = await createAdminClient();
-
     newUserAccount = await account.create(
       ID.unique(),
       email,
@@ -92,6 +102,9 @@ export const signUp = async ({ password, ...userData }: SignUpParams) => {
         dwollaCustomerUrl,
       }
     );
+
+    if (!newUser) return;
+
     const session = await account.createEmailPasswordSession(email, password);
 
     cookies().set("appwrite-session", session.secret, {
@@ -102,10 +115,65 @@ export const signUp = async ({ password, ...userData }: SignUpParams) => {
     });
 
     return parseStringify(newUser);
-  } catch (err) {
-    console.log(err);
+  } catch (error: unknown) {
+    console.log("Error while signing up", error);
+
+    console.log("Error while signing up:", error);
+
+    // Rollback or cleanup logic if needed
+    if (newUserAccount) {
+      const { account } = await createAdminClient();
+
+      // Optionally, delete the user account from Appwrite if it was created
+      await account.deleteSession(newUserAccount.$id);
+    }
+
+    // Type assertion to check if error is an instance of Error
+    if (isDwollaError(error)) {
+      const dwollaErrors = error._embedded.errors;
+
+      const messages = dwollaErrors.map((err) => {
+        switch (err.code) {
+          case "Duplicate":
+            return "The email address is already associated with an existing account.";
+          case "InvalidFormat":
+            return `The ${err.path.replace("/", "")} format is invalid.`;
+          case "MissingField":
+            return "Please fill in all required fields.";
+          default:
+            return "There was an issue with your input.";
+        }
+      });
+
+      return { error: messages.join(" ") };
+    }
+
+    // If an AppwriteException occurs, return the error message to frontend
+    if (error instanceof AppwriteException) {
+      return { error: error.message };
+    }
+
+    // If an AppwriteException occurs, return the error message to frontend
+    if (error instanceof AppwriteException) {
+      // Return error with a proper HTTP status and message
+      return { error: error.message };
+    }
+
+    // For any other error (network, server, etc.)
+    return { error: "An unexpected error occurred." };
   }
 };
+
+// Helper function to determine if it's a Dwolla error
+function isDwollaError(
+  error: any
+): error is { _embedded: { errors: Array<{ code: string; path: string }> } } {
+  return (
+    error &&
+    typeof error._embedded === "object" &&
+    Array.isArray(error._embedded.errors)
+  );
+}
 
 export async function getLoggedInUser() {
   try {
@@ -215,6 +283,12 @@ export const exchangePublicToken = async ({
 
     // If the funding source URL is not created, throw an error
     if (!fundingSourceUrl) throw Error;
+
+    // Ensure userId exists and is valid before calling createBankAccount
+    if (!user?.$id) {
+      console.error("userId is undefined or invalid:", user);
+      throw new Error("Invalid userId. Cannot create bank account.");
+    }
 
     // Create a bank account using the user ID, item ID, account ID, access token, funding source URL, and shareableId ID
     await createBankAccount({
