@@ -1,5 +1,6 @@
 ## A Fintech Bank Application
 
+![Project Logo](https://github.com/kritikakoirala/banking_app/blob/main/public/icons/app-image.png?raw=true)
 
 ## Introduction
 Built with Next.js, Horizon is a financial SaaS platform that connects to multiple bank accounts, displays transactions in real-time, allows users to transfer money to other platform users, and manages their finances altogether.
