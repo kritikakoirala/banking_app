@@ -1,50 +1,73 @@
-## A Fintech Bank Application
+# 💸 Horizon – Fintech Bank App (Learning Project)
 
-![Project Logo](https://github.com/kritikakoirala/banking_app/blob/main/public/icons/app-image.png?raw=true)
+![Horizon App](https://github.com/kritikakoirala/banking_app/blob/main/public/icons/app-image.png?raw=true)
 
-## Introduction
-Built with Next.js, Horizon is a financial SaaS platform that connects to multiple bank accounts, displays transactions in real-time, allows users to transfer money to other platform users, and manages their finances altogether.
+[![Built with](https://img.shields.io/badge/Built%20with-Next.js%20%26%20TypeScript-black?style=flat-square&logo=next.js)](https://nextjs.org/)
+[![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
+[![Status](https://img.shields.io/badge/status-Learning_Project-blue?style=flat-square)]()
 
-## Tech Stack
-- Next.js
-- TypeScript
-- Appwrite
-- Plaid
-- Dwolla
-- React Hook Form
-- Zod
-- TailwindCSS
-- Chart.js
-- ShadCN
+**Horizon** is a modern **Fintech SaaS demo application** built with **Next.js**, **TypeScript**, and a robust real-time banking integration stack. It connects to multiple bank accounts, tracks transactions, enables secure user-to-user transfers, and provides a clean, responsive UI for managing personal finances.
 
-## Features
+> ⚠️ This is a **learning project** — not intended for production or commercial use.  
+> 💡 Built to explore integrations like **Plaid**, **Dwolla**, and **Appwrite** in a full-stack TypeScript environment.
 
-### Authentication
-- Ultra-secure server-side rendered (SSR) authentication with robust validations and authorization.
+---
 
-### Bank Connectivity
-- Integrates with Plaid to enable users to link multiple bank accounts effortlessly.
+## 🧱 Tech Stack
 
-### Home Page Overview
-- Displays a general overview of the user account, including total balances from all connected banks, recent transactions, and categorized spending insights.
+| Technology       | Purpose                               |
+|------------------|----------------------------------------|
+| **Next.js**      | React framework for SSR and routing   |
+| **TypeScript**   | Strong typing for safer development   |
+| **Appwrite**     | Open-source backend & auth            |
+| **Plaid**        | Connect & read user bank data         |
+| **Dwolla**       | ACH bank transfers between users      |
+| **React Hook Form** | Efficient form management         |
+| **Zod**          | Form validation and schema enforcement|
+| **Tailwind CSS** | Utility-first CSS framework           |
+| **Chart.js**     | Visualizing spending with charts      |
+| **ShadCN / Radix** | Accessible and reusable UI components|
 
-### My Banks
-- Provides a complete list of all connected banks along with respective balances and account details.
+---
 
-### Transaction History
-- Features pagination and filtering options for viewing transaction histories across different banks.
+## ✨ Key Features
 
-### Real-time Updates
-- Reflects changes in real-time across all relevant pages when new bank accounts are connected.
+### 🔐 Authentication
+- Secure, SSR-friendly login and signup flow
+- Input validations with **Zod**
+- Token/session management using **Appwrite**
 
-### Funds Transfer
-- Allows users to transfer funds to other accounts using Dwolla, requiring essential fields such as recipient bank ID.
+### 🏦 Bank Connectivity (Plaid)
+- Users can link multiple bank accounts
+- Bank accounts instantly synced and updated
 
-### Responsiveness
-- Ensures seamless adaptation across various screen sizes and devices, providing a consistent user experience on desktop, tablet, and mobile platforms.
+### 🏠 Home Dashboard
+- Overview of total balances across all accounts
+- Recent transactions and spending insights via **Chart.js**
+- Categorized expense breakdown
 
-### Code Architecture
-- Focused on reusability and maintainability to enhance development efficiency.
+### 🧾 My Banks
+- Detailed list of connected banks and account data
+- Bank logos, balances, and account type display
 
+### 📄 Transaction History
+- Paginated and filterable
+- View transactions across all banks or filter by individual account
 
+### 🔄 Real-Time Sync
+- Any account addition or data update reflects across relevant views instantly
 
+### 💸 Funds Transfer (Dwolla)
+- User-to-user transfers using ACH via **Dwolla**
+- Requires recipient bank ID, amount, and secure validation
+
+### 📱 Fully Responsive
+- Seamless experience across desktop, tablet, and mobile devices
+
+---
+
+## 📁 Codebase Highlights
+
+- Modular & reusable **component architecture**
+- Clean separation of concerns for logic, services, and UI
+- Realtime API updates with proper error and loading states
